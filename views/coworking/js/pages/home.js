@@ -322,7 +322,7 @@ module.exports = {
             let office = template.cloneNode(true);
             office.id = offices[i]._id;
             office.querySelector(".officeName").textContent = offices[i].name;
-            office.addEventListener("click", ()=>{changePage(office, offices[i]._id)});
+            office.addEventListener("click", ()=>{changePage("office", offices[i]._id)});
             officeContainer.appendChild(office);
         }
     },

@@ -1,5 +1,6 @@
 const homePage = require("./pages/home.js");
 const deskPage = require("./pages/desk.js");
+const officePage = require("./pages/office.js");
 
 const pages = document.querySelectorAll(".page");
 

@@ -38,6 +38,10 @@ const OfficeSchema = new mongoose.Schema({
                 required: false
             }
         }]
+    }],
+    users: [{
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
     }]
 });
 
