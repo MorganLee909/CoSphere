@@ -41,4 +41,4 @@ const OfficeSchema = new mongoose.Schema({
     }]
 });
 
-module.exports = mongoose.mode("office", OfficeSchema);
+module.exports = mongoose.model("office", OfficeSchema);

@@ -90,6 +90,7 @@ module.exports = {
                 case "getLocation":
                     let tables = locationData ? locationData.tables : [];
                     this.updateTables(data.location.tables);
+                    this.showOffices(data.offices);
                     locationData = data.location;
                     document.getElementById("locationSelect").value = locationData._id;
                     document.getElementById("locationTitle").textContent = locationData.name;
@@ -311,6 +312,18 @@ module.exports = {
         for(let i = 0; i < tables.length; i++){
             let match = newTables.find(t => t._id === tables[i].id);
             if(!match) tables[i].parentElement.removeChild(tables[i]);
+        }
+    },
+
+    showOffices: function(offices){
+        let template = document.getElementById("officeButton").content.children[0];
+        let officeContainer = document.getElementById("offices");
+        for(let i = 0; i < offices.length; i++){
+            let office = template.cloneNode(true);
+            office.id = offices[i]._id;
+            office.querySelector(".officeName").textContent = offices[i].name;
+            office.addEventListener("click", ()=>{changePage(office, offices[i]._id)});
+            officeContainer.appendChild(office);
         }
     },
 

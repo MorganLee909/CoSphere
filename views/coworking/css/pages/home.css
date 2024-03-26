@@ -108,6 +108,21 @@
     border: 3px solid gold;
 }
 
+#offices{
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#offices > *{
+    height: 100px;
+    width: 100px;
+    background: white;
+    border: 1px solid black;
+    border-right: none;
+    cursor: pointer;
+}
+
 #meeting{
     position: fixed;
     top: 25%;

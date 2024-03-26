@@ -1,4 +1,5 @@
 const Location = require("../models/location.js");
+const Office = require("../models/office.js");
 
 const {joinTable} = require("./manageTables.js");
 
@@ -72,10 +73,17 @@ module.exports = {
         ws.location = location;
         ws.user = user._id.toString();
 
+        let loc = {};
         Location.findOne({_id: location})
-            .then((location)=>{
+            .then((response)=>{
+                loc = response;
+                
+                return Office.find({location: loc._id}, {name: 1});
+            })
+            .then((offices)=>{
                 let data = {
-                    location: location,
+                    location: loc,
+                    offices: offices,
                     action: "getLocation"
                 };
                 ws.send(JSON.stringify(data));

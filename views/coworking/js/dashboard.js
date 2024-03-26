@@ -12,7 +12,7 @@ const isMobile = ()=>{
     return match && match.matches;
 }
 
-changePage = (page)=>{
+changePage = (page, data)=>{
     for(let i = 0; i < pages.length; i++){
         pages[i].style.display = "none";
     }
@@ -22,6 +22,7 @@ changePage = (page)=>{
     switch(page){
         case "home": homePage.render(); break;
         case "desk": deskPage.render(); break;
+        case "office": officePage.render(data); break;
     }
 }
 
