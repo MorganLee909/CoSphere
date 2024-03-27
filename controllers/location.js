@@ -112,5 +112,22 @@ module.exports = {
                     message: "Server error"
                 });
             });
+    },
+
+    changeLocation: function(client, locationId){
+        client.location = locationId;
+
+        Location.findOne({_id: locationId})
+            .then((location)=>{
+                let data = {
+                    action: "changeLocation",
+                    location: location
+                };
+
+                client.send(JSON.stringify(data));
+            })
+            .catch((err)=>{
+                console.error(err);
+            });
     }
 }

@@ -8,13 +8,8 @@ const fileUpload = require("express-fileupload");
 const esbuild = require("esbuild");
 const https = require("https");
 const fs = require("fs");
+
 global.wss = new Websocket.Server({server: server});
-
-const {wsAuth} = require("./auth.js");
-const {leaveTable} = require("./controllers/manageTables.js");
-const {getLocation} = require("./controllers/location.js");
-const websockets = require("./controllers/websockets.js");
-
 let mongoString = "mongodb://127.0.0.1:27017/coworking";
 
 global.privateKey = fs.readFileSync("./private.pem", "utf8");
@@ -67,55 +62,9 @@ app.use(fileUpload({
 }));
 
 require("./routes.js")(app);
+require("./socketRouting.js")(wss);
 
 if(process.env.NODE_ENV === "production"){
     httpsServer.listen(process.env.HTTPS_PORT);
 }
 server.listen(process.env.PORT);
-
-wss.on("connection", (ws)=>{
-    ws.on("message", (message)=>{
-        let data = JSON.parse(message);
-        wsAuth(data.token)
-            .then((user)=>{
-                if(!user) throw "auth";
-                switch(data.action){
-                    case "status": 
-                        wss.clients.forEach((client)=>{
-                            if(client.user === user._id.toString()){
-                                ws.send(JSON.stringify({action: "status"}));
-                                ws.close(3001);
-                            }
-                        });
-                        break;
-                    case "getLocation": getLocation(data.location, ws, user); break;
-                    case "participantLeft": leaveTable(data.location, user._id.toString()); break;
-                    case "updateIcon": websockets.updateIcon(user, data.location); break;
-                }
-            })
-            .catch((err)=>{
-                console.error(err);
-            });
-    });
-
-    ws.on("close", (code)=>{
-        if(code === 3001) return;
-        leaveTable(ws.location, ws.user);
-    });
-
-    ws.on("pong", ()=>{
-        ws.isAlive = true;
-    });
-});
-
-const ping = setInterval(()=>{
-    wss.clients.forEach((client)=>{
-        if(client.isAlive === false){
-            client.terminate();
-            leaveTable(client.location, client.user);
-        }
-
-        client.isAlive = false;
-        client.ping();
-    })
-}, 30000);

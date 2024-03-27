@@ -8,7 +8,6 @@ module.exports = {
             this.rendered = true;
 
             //Retrieve and build user/tables
-            this.getUser();
             this.populateLocations();
 
             //Set video player frame controls
@@ -19,11 +18,13 @@ module.exports = {
     },
 
     changeLocation: function(){
-        this.closeMeeting(this.meetingDiv);
-        socket.close(3001, "changeLocation");
-
-        locationData._id = document.getElementById("locationSelect").value;
-        this.activateWebsocket();
+        let locationId = document.getElementById("locationSelect").value;
+        let data = {
+            action: "changeLocation",
+            token: localStorage.getItem("coworkToken"),
+            location: locationId
+        }
+        socket.send(JSON.stringify(data));
     },
 
     populateLocations: function(){
@@ -54,62 +55,6 @@ module.exports = {
                 createBanner("red", "Server error");
             });
     }, 
-
-    activateWebsocket: function(){
-        socket = new WebSocket(`ws://localhost:8000`);
-        socket.addEventListener("open", ()=>{
-            let data = {
-                token: localStorage.getItem("coworkToken"),
-                action: "status"
-            };
-            socket.send(JSON.stringify(data));
-
-            data.location = locationData ? locationData._id : user.defaultLocation;
-            data.action = "getLocation";
-            socket.send(JSON.stringify(data));
-        });
-
-        socket.addEventListener("message", (event)=>{
-            let data = JSON.parse(event.data);
-
-            switch(data.action){
-                case "status":
-                    document.getElementById("extraConnection").style.display = "flex";
-                    document.getElementById("container").style.display = "none";
-                    document.querySelector("header .headerRight").style.display = "none";
-                    socket.close(3001);
-                    break;
-                case "participantJoined":
-                    this.updateTables(data.location.tables);
-                    locationData = data.location;
-                    break;
-                case "participantLeft":
-                    this.updateTables(data.location.tables);
-                    locationData = data.location;
-                    break;
-                case "getLocation":
-                    let tables = locationData ? locationData.tables : [];
-                    this.updateTables(data.location.tables);
-                    this.showOffices(data.offices);
-                    locationData = data.location;
-                    document.getElementById("locationSelect").value = locationData._id;
-                    document.getElementById("locationTitle").textContent = locationData.name;
-                    break;
-                case "updateIcon":
-                    this.updateIcon(data.user, data.name, data.avatar);
-                    break;
-            }
-        });
-
-        socket.closeListener = socket.addEventListener("close", (event)=>{
-            if(event.code !== 3001){
-                setTimeout(()=>{
-                    createBanner("red", "Disconnected from server, attempting to reconnect...");
-                    this.activateWebsocket();
-                }, 5000)
-            }
-        });
-    },
 
     initIframeAPI: function(jwt, table){
         const options = {
@@ -271,28 +216,6 @@ module.exports = {
             event.target.setAttribute("data-fs", "false");
             event.target.parentElement.classList.remove("fullscreen");
         }
-    },
-
-    getUser: function(){
-        fetch("/user", {
-            method: "get",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("coworkToken")}`
-            }
-        })
-            .then(r=>r.json())
-            .then((user)=>{
-                if(user.error){
-                    requestError(user.message);
-                }else{
-                    window.user = user;
-                    this.activateWebsocket();
-                }
-            })
-            .catch((err)=>{
-                requestError(err.message);
-            });
     },
 
     updateTables: function(newTables){
